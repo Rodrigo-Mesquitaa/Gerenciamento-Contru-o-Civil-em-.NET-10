@@ -1,0 +1,6 @@
+@CivilConstruction.API_HostAddress = http://localhost:5236
+
+GET {{CivilConstruction.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
