@@ -1,0 +1,328 @@
+@baseUrl = http://localhost:5000
+@obraId = 00000000-0000-0000-0000-000000000001
+@fornecedorId = 00000000-0000-0000-0000-000000000002
+@ordemId = 00000000-0000-0000-0000-000000000003
+@funcionarioId = 00000000-0000-0000-0000-000000000004
+@clienteId = 00000000-0000-0000-0000-000000000007
+@contratoId = 00000000-0000-0000-0000-000000000008
+@medicaoId = 00000000-0000-0000-0000-000000000009
+@lancamentoId = 00000000-0000-0000-0000-000000000010
+
+### List works
+GET {{baseUrl}}/api/obras
+
+### Create work
+POST {{baseUrl}}/api/obras
+Content-Type: application/json
+
+{
+  "nome": "Residencial Horizonte",
+  "endereco": "Rua das Flores, 100",
+  "cliente": "Construtora Cliente Ltda",
+  "orcamento": 1250000,
+  "dataInicioPrevista": "2026-11-01T09:00:00-03:00",
+  "dataFimPrevista": "2027-09-30T18:00:00-03:00"
+}
+
+### Get work (replace obraId with the created ID)
+GET {{baseUrl}}/api/obras/{{obraId}}
+
+### Start a planned work
+PUT {{baseUrl}}/api/obras/{{obraId}}/status
+Content-Type: application/json
+
+{
+  "status": "EmExecucao"
+}
+
+### List suppliers
+GET {{baseUrl}}/api/fornecedores
+
+### Create supplier
+POST {{baseUrl}}/api/fornecedores
+Content-Type: application/json
+
+{
+  "nome": "Materiais Exemplo Ltda",
+  "documento": "12.345.678/0001-90",
+  "email": "vendas@example.com",
+  "telefone": "+55 11 5555-0100"
+}
+
+### Get supplier (replace fornecedorId with the created ID)
+GET {{baseUrl}}/api/fornecedores/{{fornecedorId}}
+
+### Create purchase order
+POST {{baseUrl}}/api/compras
+Content-Type: application/json
+
+{
+  "obraId": "{{obraId}}",
+  "fornecedorId": "{{fornecedorId}}",
+  "itens": [
+    {
+      "codigo": "CIMENTO-50",
+      "descricao": "Cimento CP-II 50kg",
+      "quantidade": 100,
+      "unidade": "saco",
+      "valorUnitario": 34.50
+    }
+  ]
+}
+
+### List purchase orders
+GET {{baseUrl}}/api/compras
+
+### Get purchase order (replace ordemId with the created ID)
+GET {{baseUrl}}/api/compras/{{ordemId}}
+
+### Approve a draft purchase order
+PUT {{baseUrl}}/api/compras/{{ordemId}}/status
+Content-Type: application/json
+
+{
+  "status": "Aprovada"
+}
+
+### Receive an approved order and update stock
+PUT {{baseUrl}}/api/compras/{{ordemId}}/status
+Content-Type: application/json
+
+{
+  "status": "Recebida"
+}
+
+### List inventory
+GET {{baseUrl}}/api/estoque
+
+### List equipment and fixed assets
+GET {{baseUrl}}/api/equipamentos
+
+### Register equipment
+POST {{baseUrl}}/api/equipamentos
+Content-Type: application/json
+
+{
+  "nome": "Betoneira 400L",
+  "numeroPatrimonio": "PAT-2026-0001",
+  "numeroSerie": "SN-EXAMPLE-001",
+  "obraId": "{{obraId}}",
+  "dataAquisicao": "2026-10-08T09:00:00-03:00",
+  "proximaManutencao": "2027-01-08T09:00:00-03:00",
+  "valorAquisicao": 8500
+}
+
+### Set equipment as in-use on a work
+PUT {{baseUrl}}/api/equipamentos/00000000-0000-0000-0000-000000000005/status
+Content-Type: application/json
+
+{
+  "status": "EmUso",
+  "obraId": "{{obraId}}"
+}
+
+### Get a registered equipment item (replace ID)
+GET {{baseUrl}}/api/equipamentos/00000000-0000-0000-0000-000000000005
+
+### Register recurring employee payment (replace funcionarioId with an existing employee ID)
+POST {{baseUrl}}/api/folha/programacoes
+Content-Type: application/json
+
+{
+  "funcionarioId": "{{funcionarioId}}",
+  "valorBruto": 3750,
+  "periodicidade": "Quinzenal",
+  "proximoPagamentoEm": "2026-10-16T09:00:00-03:00"
+}
+
+### List recurring payroll schedules
+GET {{baseUrl}}/api/folha/programacoes
+
+### Get a payroll schedule (replace ID)
+GET {{baseUrl}}/api/folha/programacoes/00000000-0000-0000-0000-000000000006
+
+### Pause a payroll schedule
+PUT {{baseUrl}}/api/folha/programacoes/00000000-0000-0000-0000-000000000006/atividade
+Content-Type: application/json
+
+{
+  "ativa": false
+}
+
+### List payroll payment events awaiting publication
+GET {{baseUrl}}/api/folha/pagamentos
+
+### Create a client
+POST {{baseUrl}}/api/clientes
+Content-Type: application/json
+
+{
+  "nome": "Cliente Residencial Ltda",
+  "documento": "12345678000190",
+  "email": "financeiro@example.com",
+  "telefone": "+55 11 5555-0200"
+}
+
+### List clients
+GET {{baseUrl}}/api/clientes
+
+### Create a construction contract (replace obraId and clienteId)
+POST {{baseUrl}}/api/contratos
+Content-Type: application/json
+
+{
+  "clienteId": "{{clienteId}}",
+  "obraId": "{{obraId}}",
+  "numero": "CONTRATO-2026-001",
+  "dataAssinatura": "2026-10-08T09:00:00-03:00",
+  "dataInicio": "2026-11-01T09:00:00-03:00",
+  "dataFimPrevista": "2027-09-30T18:00:00-03:00",
+  "valorContratado": 1250000,
+  "retencaoPercentual": 5
+}
+
+### Activate a contract
+PUT {{baseUrl}}/api/contratos/{{contratoId}}/status
+Content-Type: application/json
+
+{
+  "status": "Ativo"
+}
+
+### Record physical progress (percentage points for this measurement)
+POST {{baseUrl}}/api/contratos/{{contratoId}}/medicoes
+Content-Type: application/json
+
+{
+  "referencia": "MED-2026-11",
+  "dataMedicao": "2026-11-30T18:00:00-03:00",
+  "percentualExecutado": 12.5
+}
+
+### Submit measurement for approval
+PUT {{baseUrl}}/api/medicoes/{{medicaoId}}/status
+Content-Type: application/json
+
+{
+  "status": "Enviada"
+}
+
+### Approve measurement
+PUT {{baseUrl}}/api/medicoes/{{medicaoId}}/status
+Content-Type: application/json
+
+{
+  "status": "Aprovada"
+}
+
+### Invoice approved measurement; explicitly set due date
+PUT {{baseUrl}}/api/medicoes/{{medicaoId}}/status
+Content-Type: application/json
+
+{
+  "status": "Faturada",
+  "vencimento": "2026-12-30T18:00:00-03:00"
+}
+
+### List accounts payable and receivable
+GET {{baseUrl}}/api/financeiro/lancamentos
+
+### Create an accounts-payable entry
+POST {{baseUrl}}/api/financeiro/lancamentos
+Content-Type: application/json
+
+{
+  "descricao": "Locação de escoramento",
+  "tipo": "ContaPagar",
+  "obraId": "{{obraId}}",
+  "fornecedorId": "{{fornecedorId}}",
+  "valor": 4200,
+  "vencimento": "2026-11-15T12:00:00-03:00",
+  "referenciaExterna": "NF-1001"
+}
+
+### Get an accounts entry (replace lancamentoId)
+GET {{baseUrl}}/api/financeiro/lancamentos/{{lancamentoId}}
+
+### Settle an accounts entry (replace lancamentoId)
+PUT {{baseUrl}}/api/financeiro/lancamentos/{{lancamentoId}}/liquidacao
+Content-Type: application/json
+
+{
+  "liquidadoEm": "2026-11-15T12:00:00-03:00"
+}
+
+### Record a daily site diary
+POST {{baseUrl}}/api/apontamentos
+Content-Type: application/json
+
+{
+  "obraId": "{{obraId}}",
+  "data": "2026-11-02T18:00:00-03:00",
+  "clima": "Ensolarado",
+  "atividades": "Execução das formas do pavimento térreo",
+  "trabalhadoresPresentes": 12,
+  "horasTrabalhadas": 8,
+  "observacoes": "Concretagem prevista para o próximo turno."
+}
+
+### Allocate an employee to a job
+POST {{baseUrl}}/api/alocacoes
+Content-Type: application/json
+
+{
+  "obraId": "{{obraId}}",
+  "funcionarioId": "{{funcionarioId}}",
+  "inicio": "2026-11-02T07:00:00-03:00",
+  "funcao": "Encarregado"
+}
+
+### Report a workplace safety incident
+POST {{baseUrl}}/api/seguranca/incidentes
+Content-Type: application/json
+
+{
+  "obraId": "{{obraId}}",
+  "funcionarioId": "{{funcionarioId}}",
+  "ocorreuEm": "2026-11-02T10:30:00-03:00",
+  "gravidade": "Leve",
+  "descricao": "Quase acidente durante movimentação de material."
+}
+
+### List incidents for a work
+GET {{baseUrl}}/api/obras/{{obraId}}/seguranca/incidentes
+
+### Record corrective action and close an incident
+PUT {{baseUrl}}/api/seguranca/incidentes/00000000-0000-0000-0000-000000000011
+Content-Type: application/json
+
+{
+  "acoesCorretivas": "Realizado DDS e isolamento da área.",
+  "encerrado": true
+}
+
+### Register a quality inspection
+POST {{baseUrl}}/api/qualidade/inspecoes
+Content-Type: application/json
+
+{
+  "obraId": "{{obraId}}",
+  "referencia": "QC-2026-11-001",
+  "categoria": "Armadura",
+  "inspecionadaEm": "2026-11-02T11:00:00-03:00",
+  "resultado": "Reprovada",
+  "observacoes": "Espaçamento entre barras fora do projeto."
+}
+
+### List quality inspections for a work
+GET {{baseUrl}}/api/obras/{{obraId}}/qualidade/inspecoes
+
+### Record corrective action after a rejected inspection
+PUT {{baseUrl}}/api/qualidade/inspecoes/00000000-0000-0000-0000-000000000012/acao-corretiva
+Content-Type: application/json
+
+{
+  "acaoCorretiva": "Reposicionar armadura conforme detalhamento.",
+  "prazoCorrecao": "2026-11-03T18:00:00-03:00",
+  "encerrada": true
+}

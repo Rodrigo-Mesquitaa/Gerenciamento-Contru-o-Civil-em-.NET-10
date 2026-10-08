@@ -1,6 +1,5 @@
-﻿using CivilConstruction.Domain.Interfaces;
+using CivilConstruction.Application.Interfaces;
 using CivilConstruction.Infrastructure.Context;
-using CivilConstruction.Infrastructure.Repositories;
 
 namespace CivilConstruction.Infrastructure.UnitOfWork
 {
@@ -10,17 +9,9 @@ namespace CivilConstruction.Infrastructure.UnitOfWork
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
-            Funcionarios = new FuncionarioRepository(_context);
-            Receitas = new ReceitaRepository(_context);
-            Despesas = new DespesaRepository(_context);
-            Caixas = new CaixaRepository(_context);
         }
 
-        public IFuncionarioRepository Funcionarios { get; }
-        public IReceitaRepository Receitas { get; }
-        public IDespesaRepository Despesas { get; }
-        public ICaixaRepository Caixas { get; }
-
-        public async Task CommitAsync() => await _context.SaveChangesAsync();
+        public async Task CommitAsync(CancellationToken cancellationToken = default) =>
+            await _context.SaveChangesAsync(cancellationToken);
     }
 }

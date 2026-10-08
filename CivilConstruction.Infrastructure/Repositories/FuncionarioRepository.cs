@@ -10,28 +10,30 @@ namespace CivilConstruction.Infrastructure.Repositories
         private readonly AppDbContext _context;
         public FuncionarioRepository(AppDbContext context) { _context = context; }
 
-        public async Task AdicionarAsync(Funcionario funcionario)
+        public Task AdicionarAsync(Funcionario funcionario, CancellationToken cancellationToken = default)
         {
-            await _context.Funcionarios.AddAsync(funcionario);
-            await _context.SaveChangesAsync();
+            _context.Funcionarios.Add(funcionario);
+            return Task.CompletedTask;
         }
 
-        public async Task<IEnumerable<Funcionario>> ObterTodosAsync() => await _context.Funcionarios.AsNoTracking().ToListAsync();
+        public async Task<IEnumerable<Funcionario>> ObterTodosAsync(CancellationToken cancellationToken = default) =>
+            await _context.Funcionarios.AsNoTracking().ToListAsync(cancellationToken);
 
-        public async Task<Funcionario?> ObterPorIdAsync(Guid id) => await _context.Funcionarios.FindAsync(id);
+        public async Task<Funcionario?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+            await _context.Funcionarios.FindAsync([id], cancellationToken);
 
-        public async Task AtualizarAsync(Funcionario funcionario)
+        public Task AtualizarAsync(Funcionario funcionario, CancellationToken cancellationToken = default)
         {
             _context.Funcionarios.Update(funcionario);
-            await _context.SaveChangesAsync();
+            return Task.CompletedTask;
         }
 
-        public async Task RemoverAsync(Guid id)
+        public async Task<bool> RemoverAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var f = await _context.Funcionarios.FindAsync(id);
-            if (f == null) return;
+            var f = await _context.Funcionarios.FindAsync([id], cancellationToken);
+            if (f == null) return false;
             _context.Funcionarios.Remove(f);
-            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

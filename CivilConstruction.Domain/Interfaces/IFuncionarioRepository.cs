@@ -4,10 +4,10 @@ namespace CivilConstruction.Domain.Interfaces
 {
     public interface IFuncionarioRepository
     {
-        Task<IEnumerable<Funcionario>> ObterTodosAsync();
-        Task<Funcionario?> ObterPorIdAsync(Guid id);
-        Task AdicionarAsync(Funcionario funcionario);
-        Task AtualizarAsync(Funcionario funcionario);
-        Task RemoverAsync(Guid id);
+        Task<IEnumerable<Funcionario>> ObterTodosAsync(CancellationToken cancellationToken = default);
+        Task<Funcionario?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);
+        Task AdicionarAsync(Funcionario funcionario, CancellationToken cancellationToken = default);
+        Task AtualizarAsync(Funcionario funcionario, CancellationToken cancellationToken = default);
+        Task<bool> RemoverAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

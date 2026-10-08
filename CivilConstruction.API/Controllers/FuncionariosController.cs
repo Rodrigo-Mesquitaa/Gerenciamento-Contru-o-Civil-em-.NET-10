@@ -1,70 +1,59 @@
-﻿using CivilConstruction.API.Services;
-using CivilConstruction.Application.DTOs;
-using CivilConstruction.Application.Interfaces;
-using CivilConstruction.Domain.Events;
+using CivilConstruction.Application.Features.Funcionarios;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CivilConstruction.API.Controllers
+namespace CivilConstruction.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public sealed class FuncionariosController(ISender sender) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class FuncionariosController : ControllerBase
+    [HttpGet]
+    [ProducesResponseType<IReadOnlyList<FuncionarioResponse>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<FuncionarioResponse>>> Get(CancellationToken ct) =>
+        Ok(await sender.Send(new ListarFuncionariosQuery(), ct));
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType<FuncionarioResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<FuncionarioResponse>> GetById(Guid id, CancellationToken ct)
     {
-        private readonly IServicoFuncionario _servico;
-        private readonly RabbitMQProducer _producer;
-        private readonly ILogger<FuncionariosController> _logger;
+        var funcionario = await sender.Send(new ObterFuncionarioQuery(id), ct);
+        return funcionario is null ? NotFound() : Ok(funcionario);
+    }
 
-        public FuncionariosController(IServicoFuncionario servico, RabbitMQProducer producer, ILogger<FuncionariosController> logger)
-        {
-            _servico = servico;
-            _producer = producer;
-            _logger = logger;
-        }
+    [HttpPost]
+    [ProducesResponseType<FuncionarioResponse>(StatusCodes.Status201Created)]
+    public async Task<ActionResult<FuncionarioResponse>> Post(
+        [FromBody] CriarFuncionarioRequest request,
+        CancellationToken ct)
+    {
+        var funcionario = await sender.Send(request, ct);
+        return CreatedAtAction(nameof(GetById), new { id = funcionario.Id }, funcionario);
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> Get() => Ok(await _servico.ObterTodosAsync());
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Put(
+        Guid id,
+        [FromBody] AtualizarFuncionarioRequest request,
+        CancellationToken ct)
+    {
+        var updated = await sender.Send(
+            new AtualizarFuncionarioCommand(id, request.Nome, request.ValorDiaria),
+            ct);
+        if (!updated) return NotFound();
+        return NoContent();
+    }
 
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var f = await _servico.ObterPorIdAsync(id);
-            if (f == null) return NotFound();
-            return Ok(f);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] FuncionarioDto dto)
-        {
-            dto.Id ??= Guid.NewGuid();
-            await _servico.CriarAsync(dto);
-
-            var ev = new FuncionarioCadastradoEvent
-            {
-                Id = dto.Id.Value,
-                Nome = dto.Nome,
-                ValorDiaria = dto.ValorDiaria,
-                DataCadastro = DateTime.UtcNow
-            };
-
-            try { _producer.PublicarFuncionarioCadastrado(ev); }
-            catch (Exception ex) { _logger.LogError(ex, "Erro publicando evento FuncionarioCadastrado - considere Outbox"); }
-
-            return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
-        }
-
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] FuncionarioDto dto)
-        {
-            dto.Id = id;
-            await _servico.AtualizarAsync(dto);
-            return NoContent();
-        }
-
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            await _servico.RemoverAsync(id);
-            return NoContent();
-        }
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var removed = await sender.Send(new RemoverFuncionarioCommand(id), ct);
+        if (!removed) return NotFound();
+        return NoContent();
     }
 }

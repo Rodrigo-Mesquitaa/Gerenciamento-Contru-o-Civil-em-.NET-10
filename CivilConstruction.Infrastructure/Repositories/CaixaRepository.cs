@@ -10,18 +10,18 @@ namespace CivilConstruction.Infrastructure.Repositories
         private readonly AppDbContext _context;
         public CaixaRepository(AppDbContext context) { _context = context; }
 
-        public async Task InicializarAsync(Caixa caixa)
+        public Task InicializarAsync(Caixa caixa)
         {
-            await _context.Caixas.AddAsync(caixa);
-            await _context.SaveChangesAsync();
+            _context.Caixas.Add(caixa);
+            return Task.CompletedTask;
         }
 
         public async Task<Caixa?> ObterAsync() => await _context.Caixas.AsNoTracking().FirstOrDefaultAsync();
 
-        public async Task AtualizarAsync(Caixa caixa)
+        public Task AtualizarAsync(Caixa caixa)
         {
             _context.Caixas.Update(caixa);
-            await _context.SaveChangesAsync();
+            return Task.CompletedTask;
         }
     }
 }

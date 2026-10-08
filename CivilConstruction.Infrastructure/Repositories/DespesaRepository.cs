@@ -10,10 +10,10 @@ namespace CivilConstruction.Infrastructure.Repositories
         private readonly AppDbContext _context;
         public DespesaRepository(AppDbContext context) { _context = context; }
 
-        public async Task AdicionarAsync(Despesa despesa)
+        public Task AdicionarAsync(Despesa despesa)
         {
-            await _context.Despesas.AddAsync(despesa);
-            await _context.SaveChangesAsync();
+            _context.Despesas.Add(despesa);
+            return Task.CompletedTask;
         }
 
         public async Task<IEnumerable<Despesa>> ObterTodasAsync() => await _context.Despesas.AsNoTracking().ToListAsync();

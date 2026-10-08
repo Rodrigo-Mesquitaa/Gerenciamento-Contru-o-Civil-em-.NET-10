@@ -10,12 +10,18 @@ namespace CivilConstruction.Application.Services
         private readonly IReceitaRepository _receitaRepo;
         private readonly IDespesaRepository _despesaRepo;
         private readonly ICaixaRepository _caixaRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ServicoFinanceiro(IReceitaRepository receitaRepo, IDespesaRepository despesaRepo, ICaixaRepository caixaRepo)
+        public ServicoFinanceiro(
+            IReceitaRepository receitaRepo,
+            IDespesaRepository despesaRepo,
+            ICaixaRepository caixaRepo,
+            IUnitOfWork unitOfWork)
         {
             _receitaRepo = receitaRepo;
             _despesaRepo = despesaRepo;
             _caixaRepo = caixaRepo;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<ReceitaDto>> ObterReceitasAsync()
@@ -45,6 +51,8 @@ namespace CivilConstruction.Application.Services
                 caixa.SaldoAtual += entity.Valor;
                 await _caixaRepo.AtualizarAsync(caixa);
             }
+
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task AdicionarDespesaAsync(DespesaDto dto)
@@ -62,6 +70,8 @@ namespace CivilConstruction.Application.Services
                 caixa.SaldoAtual -= entity.Valor;
                 await _caixaRepo.AtualizarAsync(caixa);
             }
+
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task<decimal> CalcularLucroAsync()

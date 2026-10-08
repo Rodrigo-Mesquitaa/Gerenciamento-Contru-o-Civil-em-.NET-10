@@ -6,8 +6,8 @@ namespace CivilConstruction.Application.Interfaces
     {
         Task<IEnumerable<FuncionarioDto>> ObterTodosAsync();
         Task<FuncionarioDto?> ObterPorIdAsync(Guid id);
-        Task CriarAsync(FuncionarioDto dto);
-        Task AtualizarAsync(FuncionarioDto dto);
-        Task RemoverAsync(Guid id);
+        Task CriarAsync(FuncionarioDto dto, CancellationToken cancellationToken = default);
+        Task<bool> AtualizarAsync(FuncionarioDto dto);
+        Task<bool> RemoverAsync(Guid id);
     }
 }
